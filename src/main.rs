@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use ::rand::Rng;
+use ::rand::RngExt;
 
 // --- CONFIGURATION CONSTANTS ---
 const GRAVITY: f32 = 0.15;
@@ -54,15 +54,15 @@ struct Particle {
 
 impl Particle {
     fn new(x: f32, y: f32) -> Self {
-        let mut rng = ::rand::thread_rng();
+        let mut rng = ::rand::rng();
         Self {
             x,
             y,
-            vx: rng.gen_range(-3.0..-0.5),
-            vy: rng.gen_range(-2.0..2.0),
-            size: rng.gen_range(3.0..6.0),
+            vx: rng.random_range(-3.0..-0.5),
+            vy: rng.random_range(-2.0..2.0),
+            size: rng.random_range(3.0..6.0),
             life: 1.0,
-            color: if rng.gen_bool(0.7) { color_bird_body() } else { Color::from_rgba(255, 255, 255, 200) },
+            color: if rng.random_bool(0.7) { color_bird_body() } else { Color::from_rgba(255, 255, 255, 200) },
         }
     }
 
@@ -100,8 +100,8 @@ impl Cloud {
         self.x -= self.speed * dt;
         if self.x + self.width < 0.0 {
             self.x = screen_width() + 50.0;
-            let mut rng = ::rand::thread_rng();
-            self.y = rng.gen_range(50.0..220.0);
+            let mut rng = ::rand::rng();
+            self.y = rng.random_range(50.0..220.0);
         }
     }
 
@@ -420,11 +420,11 @@ async fn main() {
                 pipe_spawn_timer += dt;
                 if pipe_spawn_timer >= SPAWN_INTERVAL {
                     pipe_spawn_timer = 0.0;
-                    let mut rng = ::rand::thread_rng();
+                    let mut rng = ::rand::rng();
                     // Generate gap center between 150 and screen_height - 150 - GroundHeight
                     let min_y = 150.0;
                     let max_y = (screen_height() - GROUND_HEIGHT - 150.0).max(min_y + 10.0);
-                    let gap_y = rng.gen_range(min_y..max_y);
+                    let gap_y = rng.random_range(min_y..max_y);
                     pipes.push(Pipe::new(screen_width() + 50.0, gap_y));
                 }
 
