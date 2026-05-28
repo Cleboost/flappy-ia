@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 macroquad = "0.4" # Simple, rapide, parfait pour la 2D
-rand = "0.8"      # Pour générer la hauteur des tuyaux
+rand = "0.10.1"      # Pour générer la hauteur des tuyaux
