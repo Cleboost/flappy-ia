@@ -72,17 +72,50 @@ impl Brain {
         }
     }
 
-    fn mutate(&self, rate: f32) -> Self {
+    fn crossover(&self, other: &Self) -> Self {
         let mut rng = ::rand::rng();
+        let mut child = self.clone();
+
+        // Crossover for weights_ih (5x5 = 25 weights)
+        for i in 0..5 {
+            for j in 0..5 {
+                if rng.random_bool(0.5) {
+                    child.weights_ih[i][j] = other.weights_ih[i][j];
+                }
+            }
+        }
+
+        // Crossover for bias_h (5 values)
+        for i in 0..5 {
+            if rng.random_bool(0.5) {
+                child.bias_h[i] = other.bias_h[i];
+            }
+        }
+
+        // Crossover for weights_ho (5 values)
+        for i in 0..5 {
+            if rng.random_bool(0.5) {
+                child.weights_ho[i] = other.weights_ho[i];
+            }
+        }
+
+        // Crossover for bias_o
+        if rng.random_bool(0.5) {
+            child.bias_o = other.bias_o;
+        }
+
+        child
+    }
+
+    fn mutate(&self, rate: f32) -> Self {
         let mut mutated = self.clone();
+        let mut rng = ::rand::rng();
 
         let mut mutate_val = |val: &mut f32| {
             if rng.random_bool(rate as f64) {
                 if rng.random_bool(0.15) {
-                    // 15% of mutations are complete random resets to help escape local minima!
                     *val = rng.random_range(-1.0..1.0);
                 } else {
-                    // 85% are small adjustments
                     *val += rng.random_range(-0.35..0.35);
                     *val = val.clamp(-2.0, 2.0);
                 }
@@ -862,7 +895,7 @@ async fn main() {
                 bird.update(&state);
 
                 // Handle inputs
-                let has_save = std::path::Path::new("save_brain.txt").exists();
+                let has_save = std::path::Path::new("../save_brain.txt").exists();
                 let (mx, my) = mouse_position();
                 let screen_w = screen_width();
                 let screen_h = screen_height();
@@ -891,7 +924,7 @@ async fn main() {
                 if has_save {
                     // Option 1: Resume training (Key R or Button 1 click)
                     if is_key_pressed(KeyCode::R) || (hover1 && is_mouse_button_pressed(MouseButton::Left)) {
-                        if let Ok(data) = load_game("save_brain.txt") {
+                        if let Ok(data) = load_game("save_brainv1.txt") {
                             state = State::AIPlaying;
                             history_max_scores.clear();
                             history_avg_scores.clear();
@@ -1212,7 +1245,7 @@ async fn main() {
 
                         // Save best agent's brain to file automatically!
                         if let Err(e) = save_game(
-                            "save_brain.txt",
+                            "save_brainv1.txt",
                             generation,
                             high_score,
                             last_best_score,
@@ -1430,7 +1463,7 @@ async fn main() {
                 draw_text_shadow(title_text, (screen_w - text_w) / 2.0, 120.0, font_size, WHITE);
 
                 // Subtitle (AI and Player selection menu)
-                let has_save = std::path::Path::new("save_brain.txt").exists();
+                let has_save = std::path::Path::new("../save_brainv1.txt").exists();
                 let (mx, my) = mouse_position();
                 let btn_w = 280.0;
                 let btn_h = 50.0;
